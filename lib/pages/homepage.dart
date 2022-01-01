@@ -1,11 +1,18 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:reseppi_beta/model/foodModel.dart';
+import 'package:reseppi_beta/model/recipe_model.dart';
+import 'package:reseppi_beta/pages/list_resep.dart';
+import 'package:reseppi_beta/services/api.dart';
+import 'package:reseppi_beta/shared/constant.dart';
 import 'package:reseppi_beta/shared/theme.dart';
 import 'package:reseppi_beta/widgets/categories_tile.dart';
 import 'package:reseppi_beta/widgets/custom_icon_button.dart';
 import 'package:reseppi_beta/widgets/food_card.dart';
+import 'package:reseppi_beta/widgets/recipe_card.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+late Future<List<Recipe>> futureRecipe;
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -15,6 +22,26 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final textController = TextEditingController();
+  final String apiUrl =
+      "https://api.spoonacular.com/recipes/random?apiKey=$API_KEY&number=10";
+  Future<List<dynamic>> _fecthDataRecipe() async {
+    var result = await http.get(Uri.parse(apiUrl));
+    return json.decode(result.body)['recipes'];
+  }
+  // final apiservice = APIService();
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   futureRecipe = apiservice.fetchRecomendRecipe();
+  //   print("resep: ${futureRecipe}");
+  // }
+
+  @override
+  void dispose() {
+    textController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,6 +124,96 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  Widget buildRecomendResep() {
+    return Padding(
+      padding: EdgeInsets.all(8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Rekomendasi Resep",
+            style: blackTextColor.copyWith(fontSize: 18, fontWeight: semiBold),
+          ),
+          Container(
+            height: 220,
+            margin: EdgeInsets.only(top: 24),
+            child: FutureBuilder<List<dynamic>>(
+              future: _fecthDataRecipe(),
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                // print(snapshot.data);
+                if (snapshot.hasData) {
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (_, index) {
+                      // Recipe resep = snapshot.data![index];
+
+                      // return RecipeCard(resep: snapshot.data![index]);
+                      return RecipeCard(
+                        id: snapshot.data![index]['id'],
+                        title: snapshot.data![index]['title'],
+                        image: snapshot.data![index]['image'],
+                        ingredients: snapshot.data![index]
+                            ['extendedIngredients'],
+                        instructions: snapshot.data![index]['instructions'],
+                      );
+                      // imgaeType: snapshot.data![index]['imageType']);
+                    },
+                  );
+                } else {
+                  return Center(child: CircularProgressIndicator());
+                }
+              },
+            ),
+            //   child: ListView.builder(
+            //     scrollDirection: Axis.horizontal,
+            //     itemCount: foodList.length,
+            //     itemBuilder: (context, index) {
+            //       FoodModel food = foodList[index];
+            //       return FoodCard(food: food);
+            //     },
+            //   ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget buildSearch() {
+    return Row(
+      children: [
+        Expanded(
+            child: TextField(
+          onSubmitted: (String value) async {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ListRecipePage(apiUrl: 
+            "https://api.spoonacular.com/recipes/complexSearch?apiKey=$API_KEY&number=10&query=$value&includeIngredients=asparagus&instructionsRequired=false&fillIngredients=true&addRecipeInformation=true"
+            )));
+          },
+          controller: textController,
+          decoration: InputDecoration(
+              hintText: "Search Food",
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: rPrimaryColor, width: 2.0)),
+              focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: rYellowColor, width: 2.0)),
+              contentPadding: EdgeInsets.all(8),
+              suffixIcon: Icon(
+                Icons.search,
+                color: rPrimaryColor,
+              )),
+        )),
+        CustomIconButton(
+          icon: Icon(Icons.filter_list),
+          onPressed: () {},
+          margin: EdgeInsets.only(left: 8),
+          backgroundColor: rYellowColor,
+        )
+      ],
+    );
+  }
 }
 
 Widget buildHeader({Key? key}) {
@@ -113,10 +230,10 @@ Widget buildHeader({Key? key}) {
                 icon: Icon(Icons.sort),
                 onPressed: () {},
               ),
-              Text("Masak Yuk", style: blackTextColor.copyWith(
-                fontSize: 20,
-                fontWeight: bold
-              ),)
+              Text(
+                "Masak Yuk",
+                style: blackTextColor.copyWith(fontSize: 20, fontWeight: bold),
+              )
             ],
           ),
           CircleAvatar(
@@ -143,35 +260,6 @@ Widget buildHeader({Key? key}) {
             style: primaryTextColor.copyWith(fontSize: 16, fontWeight: bold),
           )
         ],
-      )
-    ],
-  );
-}
-
-Widget buildSearch() {
-  return Row(
-    children: [
-      Expanded(
-          child: TextField(
-        decoration: InputDecoration(
-            hintText: "Search Food",
-            border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: rPrimaryColor, width: 2.0)),
-            focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: rYellowColor, width: 2.0)),
-            contentPadding: EdgeInsets.all(8),
-            suffixIcon: Icon(
-              Icons.search,
-              color: rPrimaryColor,
-            )),
-      )),
-      CustomIconButton(
-        icon: Icon(Icons.filter_list),
-        onPressed: () {},
-        margin: EdgeInsets.only(left: 8),
-        backgroundColor: rYellowColor,
       )
     ],
   );
@@ -221,7 +309,6 @@ Widget _buildCategoriesList() {
         color: Color(0x4DFF2A0F),
         title: 'Spicy',
       ),
-      
       CategoriesTile(
         assetPath: 'assets/grill.png',
         color: Color(0x4DCF9E0F),
@@ -233,36 +320,6 @@ Widget _buildCategoriesList() {
         title: 'Seafood',
       ),
     ],
-  );
-}
-
-Widget buildRecomendResep() {
-  return Padding(
-    padding: EdgeInsets.all(8),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Rekomendasi Resep",
-          style: blackTextColor.copyWith(
-            fontSize: 18,
-            fontWeight: semiBold
-          ),
-        ),
-        Container(
-          height:220,
-          margin: EdgeInsets.only(top: 24),
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: foodList.length,
-            itemBuilder: (context, index) {
-              FoodModel food = foodList[index];
-              return FoodCard(food: food);
-            },
-          ),
-        )
-      ],
-    ),
   );
 }
 

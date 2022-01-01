@@ -1,8 +1,11 @@
 
 
+// import 'dart:js';
+
 import 'package:flutter/material.dart';
 import 'package:reseppi_beta/pages/account.dart';
 import 'package:reseppi_beta/pages/homepage.dart';
+import 'package:reseppi_beta/pages/list_resep.dart';
 import 'package:reseppi_beta/pages/not_found.dart';
 import 'package:reseppi_beta/pages/onboarding.dart';
 import 'package:reseppi_beta/pages/scan_found.dart';
@@ -15,12 +18,13 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
+  
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(debugShowCheckedModeBanner: false, routes: {
       "/": (context) => SplashPage(),
+      // "/": (context) => ScanPage(),
       '/scan' : (context) => ScanPage(),
       '/404' : (context) => ResepNotFound(),
       '/home': (context) => HomePage(),

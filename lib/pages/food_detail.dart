@@ -59,7 +59,7 @@ class _FoodDetailPageState extends State<FoodDetailPage> {
               children: [
                 ...List.generate(
                     5, (index) => Icon(Icons.star, color: Colors.yellow)),
-                Text("${food.rating}"),
+                Text("4.6"),
                 Text("(1k+)"),
                 Spacer(),
                 CustomIconButton(
